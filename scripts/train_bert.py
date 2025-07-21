@@ -81,7 +81,7 @@ def train_bert_model(data_path='../data/processed_hc3.csv', model_dir='../models
         save_strategy='epoch',
         logging_dir='./logs',
         logging_steps=10,
-        per_device_train_batch_size=8,  # smaller for speed
+        per_device_train_batch_size=8,
         per_device_eval_batch_size=8,
         num_train_epochs=1 if debug else 2,
         learning_rate=3e-5,
@@ -89,7 +89,7 @@ def train_bert_model(data_path='../data/processed_hc3.csv', model_dir='../models
         save_total_limit=1,
         load_best_model_at_end=True,
         metric_for_best_model='accuracy',
-        fp16=torch.cuda.is_available()  # Mixed precision if GPU
+        fp16=torch.cuda.is_available()
     )
 
     # Metrics
