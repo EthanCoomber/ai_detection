@@ -1,6 +1,6 @@
 {
   "best_global_step": 25,
-  "best_metric": 0.72,
+  "best_metric": 0.7,
   "best_model_checkpoint": "../models/bert_model/checkpoint-25",
   "epoch": 1.0,
   "eval_steps": 500,
@@ -11,26 +11,26 @@
   "log_history": [
     {
       "epoch": 0.4,
-      "grad_norm": 2.461533784866333,
+      "grad_norm": 1.7105042934417725,
       "learning_rate": 1.9200000000000003e-05,
-      "loss": 0.6054,
+      "loss": 0.65,
       "step": 10
     },
     {
       "epoch": 0.8,
-      "grad_norm": 2.9644126892089844,
+      "grad_norm": 1.9286634922027588,
       "learning_rate": 7.2e-06,
-      "loss": 0.5324,
+      "loss": 0.5997,
       "step": 20
     },
     {
       "epoch": 1.0,
-      "eval_accuracy": 0.72,
-      "eval_f1": 0.0,
-      "eval_loss": 0.534895658493042,
-      "eval_runtime": 0.8623,
-      "eval_samples_per_second": 57.985,
-      "eval_steps_per_second": 8.118,
+      "eval_accuracy": 0.7,
+      "eval_f1": 0.11764705882352941,
+      "eval_loss": 0.5668226480484009,
+      "eval_runtime": 0.3846,
+      "eval_samples_per_second": 129.993,
+      "eval_steps_per_second": 18.199,
       "step": 25
     }
   ],
