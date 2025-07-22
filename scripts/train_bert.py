@@ -9,12 +9,13 @@ from transformers import (
     EarlyStoppingCallback
 )
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import os
 
 print("Transformers version:", __import__("transformers").__version__)
 
 class TextDataset(Dataset):
-    def __init__(self, texts, labels, tokenizer, max_length=64):
+    def __init__(self, texts, labels, tokenizer, max_length=128):
         self.texts = texts
         self.labels = labels
         self.tokenizer = tokenizer
@@ -40,6 +41,15 @@ class TextDataset(Dataset):
             'labels': torch.tensor(label, dtype=torch.long)
         }
 
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    preds = logits.argmax(axis=-1)
+    acc = accuracy_score(labels, preds)
+    f1 = f1_score(labels, preds)
+    precision = precision_score(labels, preds)
+    recall = recall_score(labels, preds)
+    return {'accuracy': acc, 'f1': f1, 'precision': precision, 'recall': recall}
+
 def train_bert_model(data_path='../data/processed_hc3.csv', model_dir='../models/bert_model', debug=False):
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Processed dataset not found at {data_path}. Run data_preprocessing.py first.")
@@ -49,11 +59,15 @@ def train_bert_model(data_path='../data/processed_hc3.csv', model_dir='../models
     df = df.dropna(subset=['text'])
     df = df[df['text'].str.strip() != ""]
 
+    df = df.sample(frac=0.2, random_state=42).reset_index(drop=True)
+    print(f"Training on a subset of {len(df)} samples for faster execution.")
+
     X_train, X_val, y_train, y_val = train_test_split(
         df['text'], df['label'], test_size=0.2, random_state=42
     )
 
-    # Use a smaller subset for debugging
+
+    # Debug mode
     if debug:
         X_train, y_train = X_train[:200], y_train[:200]
         X_val, y_val = X_val[:50], y_val[:50]
@@ -80,26 +94,18 @@ def train_bert_model(data_path='../data/processed_hc3.csv', model_dir='../models
         eval_strategy='epoch',
         save_strategy='epoch',
         logging_dir='./logs',
-        logging_steps=10,
-        per_device_train_batch_size=8,
-        per_device_eval_batch_size=8,
-        num_train_epochs=1 if debug else 2,
+        logging_steps=50,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
+        num_train_epochs=4 if not debug else 1,
         learning_rate=3e-5,
         weight_decay=0.01,
+        warmup_steps=100,
         save_total_limit=1,
         load_best_model_at_end=True,
-        metric_for_best_model='accuracy',
+        metric_for_best_model='f1',
         fp16=torch.cuda.is_available()
     )
-
-    # Metrics
-    def compute_metrics(eval_pred):
-        from sklearn.metrics import accuracy_score, f1_score
-        logits, labels = eval_pred
-        preds = logits.argmax(axis=-1)
-        acc = accuracy_score(labels, preds)
-        f1 = f1_score(labels, preds)
-        return {'accuracy': acc, 'f1': f1}
 
     # Trainer
     trainer = Trainer(
@@ -108,7 +114,7 @@ def train_bert_model(data_path='../data/processed_hc3.csv', model_dir='../models
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         compute_metrics=compute_metrics,
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=1)]
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=2)]
     )
 
     # Train
@@ -120,5 +126,6 @@ def train_bert_model(data_path='../data/processed_hc3.csv', model_dir='../models
     print(f"DistilBERT model saved to {model_dir}")
 
 if __name__ == "__main__":
-    # Enable debug=True for a fast test run
-    train_bert_model(debug=True)
+    # Enable debug=True for a quick test run
+    # train_bert_model(debug=True)
+    train_bert_model(debug=False)
