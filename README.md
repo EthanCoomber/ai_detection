@@ -1,97 +1,156 @@
-
 # AI-Generated Text Detection
 
-This project detects whether a given text was written by a human or an AI model (e.g., GPT) using NLP techniques. It includes a baseline TF-IDF + Logistic Regression classifier and a fine-tuned BERT model.
+Detect whether a given text was written by a human or an AI model (e.g., GPT) using NLP techniques. This project implements and compares two approaches:
 
----
+- **TF-IDF + Logistic Regression** (Baseline)
+- **Fine-tuned DistilBERT** (Transformer-based)
 
-## **Project Structure**
+The dataset is the [HC3 dataset](https://huggingface.co/datasets/Hello-SimpleAI/HC3), containing human-written and AI-generated academic responses.
+
+## Table of Contents
+
+1. [Project Structure](#project-structure)  
+2. [Setup Instructions](#setup-instructions)  
+3. [Usage](#usage)  
+4. [Evaluation](#evaluation)  
+5. [Results](#results)  
+6. [Future Work](#future-work)  
+7. [References](#references)  
+8. [License](#license)
+
+## Project Structure
 ```
-AI_Generated_Text_Detection/
+Final Project
 │
 ├── data/
-│   ├── HC3_dataset.json         # Raw dataset (downloaded from HuggingFace)
-│   └── processed_hc3.csv        # Clean dataset after preprocessing
+│   ├── HC3\_dataset.json             # Raw dataset (from HuggingFace)
+│   └── processed\_hc3.csv           # Preprocessed dataset
 │
 ├── models/
-│   ├── baseline_model.pkl       # Saved TF-IDF + Logistic Regression model
-│   ├── tfidf_vectorizer.pkl     # Saved TF-IDF vectorizer
-│   └── bert_model/              # Fine-tuned BERT model and tokenizer
+│   ├── baseline\_model.pkl          # Trained logistic regression model
+│   ├── tfidf\_vectorizer.pkl        # Trained TF-IDF vectorizer
+│   └── bert\_model/                # Fine-tuned DistilBERT model and tokenizer
 │
 ├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_baseline_tfidf_model.ipynb
-│   └── 03_fine_tune_bert.ipynb
+│   ├── 01\_data\_exploration.ipynb
+│   ├── 02\_baseline\_tfidf\_model.ipynb
+│   └── 03\_fine\_tune\_bert.ipynb
 │
 ├── scripts/
-│   ├── data_preprocessing.py    # Cleans & prepares the dataset
-│   ├── train_baseline.py        # Trains TF-IDF + Logistic Regression model
-│   └── train_bert.py            # Fine-tunes BERT on the dataset
+│   ├── data\_preprocessing.py       # Preprocesses the HC3 dataset
+│   ├── train\_baseline.py           # Trains TF-IDF + logistic regression model
+│   └── train\_bert.py              # Fine-tunes DistilBERT
 │
 ├── reports/
-│   └── final_report.pdf         # Final project report
+│   └── AI\_Text\_Detection\_Report.pdf  # Final report
 │
 ├── presentation/
-│   └── slides.pdf               # Presentation slides
+│   └── slides.pdf 
 │
-├── requirements.txt             # Python dependencies
-└── README.md                    # Project overview & instructions
-```
----
+├── requirements.txt          
+└── README.md              
 
-## **Setup Instructions**
-1. Clone the repository or copy the folder.
-2. Install dependencies:
+````
+
+## Setup Instructions
+
+1. **Clone the repository**  
+   ```bash
+   git clone <repo-url>
+   cd AI_Generated_Text_Detection
+   ```
+
+2. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Download the HC3 dataset from HuggingFace:  
+3. **Download the HC3 dataset**
+   Option A: Using the Hugging Face CLI (requires `huggingface_hub` login):
+
+   ```bash
+   pip install huggingface_hub
+   huggingface-cli login
+   python - <<'PY'
+   from huggingface_hub import hf_hub_download
+   path = hf_hub_download(repo_id="Hello-SimpleAI/HC3", filename="HC3.jsonl")
+   print("Downloaded to:", path)
+   PY
+   ```
+
+   Option B: Manually download from:
    [https://huggingface.co/datasets/Hello-SimpleAI/HC3](https://huggingface.co/datasets/Hello-SimpleAI/HC3)
 
-4. Save the dataset as `data/HC3_dataset.json`.
+   Save the raw file as:
 
----
+   ```bash
+   mkdir -p data
+   mv <downloaded-file> data/HC3_dataset.json
+   ```
 
-## **How to Run**
+## Usage
 
-### **1. Preprocess Data**
+### 1. Preprocess the dataset
+
 ```bash
 python scripts/data_preprocessing.py
 ```
-- This creates `data/processed_hc3.csv` with human/AI-labeled text.
 
-### **2. Train Baseline Model**
+Output: `data/processed_hc3.csv` (cleaned and formatted examples for modeling).
+
+### 2. Train baseline model (TF-IDF + Logistic Regression)
+
 ```bash
 python scripts/train_baseline.py
 ```
-- Trains a TF-IDF + Logistic Regression classifier.
-- Saves model to `models/baseline_model.pkl`.
 
-### **3. Fine-tune BERT**
+Outputs:
+
+* Serialized TF-IDF vectorizer (`tfidf_vectorizer.pkl`)
+* Logistic regression model (`baseline_model.pkl`)
+* Evaluation metrics (accuracy, F1, confusion matrix)
+
+### 3. Fine-tune DistilBERT
+
 ```bash
 python scripts/train_bert.py
 ```
-- Fine-tunes BERT on the HC3 dataset.
-- Saves model to `models/bert_model/`.
 
----
+Outputs:
 
-## **Evaluation**
-- Both training scripts print evaluation metrics (Accuracy, F1-score).
-- Confusion matrix is displayed for the baseline model.
-- For BERT, metrics are printed after each epoch.
+* Fine-tuned transformer saved under `models/bert_model/`
+* Evaluation metrics (accuracy, F1, etc.)
 
----
+## Evaluation
 
-## **Next Steps / Future Work**
-- Test with more datasets (e.g., other GPT variants).
-- Add explainability (e.g., SHAP/LIME) to see which words influence classification.
-- Build a simple web app to test live text input.
+Both training scripts report:
 
----
+* **Accuracy**
+* **F1-score**
+* (Baseline script additionally shows a confusion matrix)
 
-## **References**
-- [HC3 Dataset](https://huggingface.co/datasets/Hello-SimpleAI/HC3)
-- [HuggingFace Transformers](https://huggingface.co/transformers/)
-- [scikit-learn](https://scikit-learn.org/)
+## Results
+
+| Model                        | Accuracy | F1-Score |
+| ---------------------------- | -------- | -------- |
+| TF-IDF + Logistic Regression | 96%      | 0.95     |
+| Fine-tuned DistilBERT        | 99%      | 0.99     |
+
+*Results shown are from a sample run; for publication, report averaged metrics over cross-validation or held-out test splits.*
+
+## Future Work
+
+* Fine-tune on the full HC3 dataset and additional benchmarks.
+* Add interpretability (e.g., SHAP, LIME) for model explanations.
+* Experiment with larger or more recent transformer variants (RoBERTa, GPT-based).
+* Build a lightweight web interface for interactive classification.
+* Deploy as an API for real-time detection.
+
+## References
+
+* [HC3 Dataset – Hello-SimpleAI](https://huggingface.co/datasets/Hello-SimpleAI/HC3)
+* Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.*
+* Gehrmann, S., Strobelt, H., & Rush, A. M. (2019). *GLTR: Statistical Detection and Visualization of Generated Text.*
+* Hugging Face Transformers
+* scikit-learn
